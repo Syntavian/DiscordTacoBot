@@ -10,3 +10,4 @@ Posts a leetcode problem to a channel every day.
 
 - Determine runnablity on headless raspberry pi.
 - Post message containing link.
+- Investigate lambda trigger every day
