@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from decouple import config
 from discord.ext import commands
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 
 DISCORD_BOT_TOKEN = config("TOKEN")
@@ -17,23 +18,25 @@ bot = commands.Bot(command_prefix="$")
 
 
 def get_problem():
+    options = Options()
+    options.headless = True
     service = Service("./geckodriver")
-    driver = webdriver.Firefox(service=service)
+    driver = webdriver.Firefox(service=service, options=options)
     driver.get("https://leetcode.com/problemset/all/")
-    sleep(3)
+    sleep(5)
     html = driver.page_source
     driver.close()
     soup = BeautifulSoup(html, "html.parser")
-    problem = soup.find(role="row", index="0").find_all("a")[1].text
-    return problem
+    problem_element = soup.find_all(role="row")[1].find_all("a")[1]
+    return (problem_element.text, problem_element["href"])
 
 
 async def send_problem_update():
     await bot.wait_until_ready()
     channel = bot.get_channel(CHANNEL_ID)
     problem = get_problem()
-    # TODO: Add a link to the problem page
-    await channel.send(f"Today's leetcode question is: {problem}")
+    result = f"Today's leetcode question is: [{problem[0]}](https://leetcode.com{problem[1]})"
+    await channel.send(result)
 
 
 async def background_task():
