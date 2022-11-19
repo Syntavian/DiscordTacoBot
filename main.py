@@ -19,6 +19,7 @@ client = discord.Client(intents=intents)
 
 
 def get_problem():
+    print("getting problem")
     options = Options()
     options.headless = True
     service = Service("./geckodriver")
@@ -29,10 +30,12 @@ def get_problem():
     driver.close()
     soup = BeautifulSoup(html, "html.parser")
     problem_element = soup.find_all(role="row")[1].find_all("a")[1]
+    print(f"got problem: {problem_element.text}")
     return (problem_element.text, problem_element["href"])
 
 
 async def send_problem_update():
+    print("attempting to send a problem update")
     await client.wait_until_ready()
     channel = client.get_channel(CHANNEL_ID)
     problem = get_problem()
@@ -42,19 +45,23 @@ async def send_problem_update():
 
 
 async def background_task():
+    print("running background_task()")
     now = datetime.utcnow()
     if now.time() > PROBLEM_UPDATE_TIME:
         tomorrow = datetime.combine(now.date() + timedelta(days=1), time(0))
         seconds = (tomorrow - now).total_seconds()
+        print(f"sleeping for {seconds} seconds")
         await asyncio.sleep(seconds)
     while True:
         now = datetime.now()
         target_time = datetime.combine(now.date(), PROBLEM_UPDATE_TIME)
         seconds_until_target = (target_time - now).total_seconds()
+        print(f"sleeping for {seconds_until_target} seconds")
         await asyncio.sleep(seconds_until_target)
         await send_problem_update()
         tomorrow = datetime.combine(now.date() + timedelta(days=1), time(0))
         seconds = (tomorrow - now).total_seconds()
+        print(f"sleeping for {seconds} seconds")
         await asyncio.sleep(seconds)
 
 
