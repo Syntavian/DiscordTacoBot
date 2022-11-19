@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # source: https://stackoverflow.com/questions/63769685/discord-py-how-to-send-a-message-everyday-at-a-specific-time
 import asyncio
 from datetime import datetime, time, timedelta
