@@ -3,9 +3,9 @@ import asyncio
 from datetime import datetime, time, timedelta
 from time import sleep
 
+import discord
 from bs4 import BeautifulSoup
 from decouple import config
-from discord.ext import commands
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
@@ -14,7 +14,8 @@ DISCORD_BOT_TOKEN = config("TOKEN")
 CHANNEL_ID = config("CHANNEL_ID")
 PROBLEM_UPDATE_TIME = time(10, 00, 0)
 
-bot = commands.Bot(command_prefix="$")
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
 
 
 def get_problem():
@@ -32,11 +33,12 @@ def get_problem():
 
 
 async def send_problem_update():
-    await bot.wait_until_ready()
-    channel = bot.get_channel(CHANNEL_ID)
+    await client.wait_until_ready()
+    channel = client.get_channel(CHANNEL_ID)
     problem = get_problem()
     result = f"Today's leetcode question is: [{problem[0]}](https://leetcode.com{problem[1]})"
-    await channel.send(result)
+    print(result)
+    # await channel.send(result)
 
 
 async def background_task():
@@ -56,6 +58,11 @@ async def background_task():
         await asyncio.sleep(seconds)
 
 
+async def main():
+    async with client:
+        client.loop.create_task(background_task())
+        await client.start(DISCORD_BOT_TOKEN)
+
+
 if __name__ == "__main__":
-    bot.loop.create_task(background_task())
-    bot.run(DISCORD_BOT_TOKEN)
+    asyncio.run(main())
